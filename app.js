@@ -1,11 +1,16 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const authRoutes = require('./routes/authRoutes');
+const cookieParser = require('cookie-parser');
+const {requireAuth, checkUser} = require('./middlewares/authMiddleware');
 
 const app = express();
 const port = 3000;
 
 // middleware
 app.use(express.static('public'));
+app.use(express.json());
+app.use(cookieParser());
 
 // view engine
 app.set('view engine', 'ejs');
@@ -22,8 +27,10 @@ mongoose.connect(dbURI,{
 });
 
 // routes
+app.get('*',checkUser)
 app.get('/', (req, res) => res.render('home'));
-app.get('/smoothies', (req, res) => res.render('smoothies'));
+app.get('/smoothies',requireAuth, (req, res) => res.render('smoothies'));
+app.use(authRoutes);
 
 //server 
 app.listen(port,()=>{
